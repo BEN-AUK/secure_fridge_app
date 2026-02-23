@@ -1,0 +1,24 @@
+---
+description: 核心存证业务逻辑与安全保护规则
+globs: src/components/*.tsx, src/services/*.ts, functions/src/*.ts
+alwaysApply: true
+---
+
+# 核心开发底线 (STRICT NON-NEGOTIABLES)
+
+## 1. 硬件与数据采集
+- **摄像头**: 必须强制使用后置摄像头 (`facingMode: 'environment'`) 且请求高清分辨率。
+- **GPS 监听**: 严禁删除或弱化 `navigator.geolocation.watchPosition` 的配置。位置数据是法律存证的核心。
+- **Canvas 水印**: 必须在图像底部绘制半透明黑条，并写入：设备名、实时时间戳、精确 GPS 坐标。严禁 UI 重构时遗漏此逻辑。
+
+## 2. Firebase 数据流
+- **顺序**: 必须遵循 `Storage Upload` -> `Get Download URL` -> `Firestore Document Creation` 的顺序。
+- **状态管理**: 所有新上传的图片在 Firestore 中的初始状态必须设为 `status: "pending"`，严禁跳过审核阶段。
+
+## 3. UI/UX 规范
+- **移动端优先**: 必须适配 `viewport`。使用 `h-screen` 或 `fixed inset-0` 确保底部拍照按钮在不同比例的手机屏幕上永远可见且位置固定。
+- **反馈闭环**: 必须保留 `isCapturing` (快门闪烁) 和 `isUploading` (上传动画) 的视觉反馈逻辑。
+
+## 4. 技术风格
+- 严格使用 TypeScript 类型定义。
+- 仅使用 Tailwind CSS 进行样式开发，避免内联 CSS 或额外的 CSS 文件。

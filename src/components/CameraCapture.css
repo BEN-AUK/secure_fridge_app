@@ -1,0 +1,202 @@
+/* Industrial/Audit dark theme - mobile-first, fixed layout */
+
+.camera-capture {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #1a1a1a;
+  color: #00ff88;
+  overflow: hidden;
+}
+
+/* ----- Status HUD (pinned top) ----- */
+.camera-capture__hud {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  padding-top: max(0.75rem, env(safe-area-inset-top));
+}
+
+.camera-capture__hud-line {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #00ff88;
+}
+
+.camera-capture__hud-line:first-child {
+  margin-bottom: 0.15rem;
+}
+
+.camera-capture__hud-sep {
+  margin-top: 0.5rem;
+  height: 2px;
+  background: linear-gradient(90deg, #00ff88 0%, transparent 100%);
+  border: none;
+}
+
+/* ----- Viewfinder container (prevents video from pushing controls off-screen) ----- */
+.camera-capture__viewfinder {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: #0d0d0d;
+  border-radius: 8px;
+  margin: 0 0.5rem;
+  overflow: hidden;
+}
+
+.camera-capture__video-wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-capture__video-wrap video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.camera-capture__error {
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: #00ff88;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Shutter flash overlay (isCapturing feedback) */
+.camera-capture__shutter-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  pointer-events: none;
+}
+
+/* ----- Bottom controls (fixed height, button always visible) ----- */
+.camera-capture__controls {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Shutter button: large, centered, green ring + glow */
+.camera-capture__btn {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.camera-capture__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Glow halo (animated) */
+.camera-capture__btn-glow {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 0 24px 8px rgba(0, 255, 136, 0.35),
+              0 0 48px 16px rgba(0, 255, 136, 0.2);
+  animation: camera-capture-glow-pulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes camera-capture-glow-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+/* Thick green outer ring */
+.camera-capture__btn-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid #00ff88;
+  pointer-events: none;
+}
+
+/* Dark inner circle */
+.camera-capture__btn-inner {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #0d0d0d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Camera icon (square with circle) */
+.camera-capture__btn-icon {
+  width: 22px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 3px;
+  background: transparent;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.camera-capture__btn-icon::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  background: #0d0d0d;
+}
+
+/* Progress bar (visible when uploading) */
+.camera-capture__progress {
+  width: 100%;
+  max-width: 200px;
+  height: 4px;
+  background: #2a2a2a;
+  border-radius: 2px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+}
+
+.camera-capture__progress-bar {
+  height: 100%;
+  width: 40%;
+  background: #00ff88;
+  border-radius: 2px;
+  animation: camera-capture-progress 1.2s ease-in-out infinite;
+}
+
+@keyframes camera-capture-progress {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+.camera-capture__status-text {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #00ff88;
+}
