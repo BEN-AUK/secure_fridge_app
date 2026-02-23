@@ -24,10 +24,15 @@ export const analyzeTemperature = functions
             // 核心 Prompt：告诉 AI 它要干什么
             const prompt = "你是一个专业的医疗设备审计员。请识别这张冰箱照片中温度计的数字。只返回数字（例如：4.2）。如果看不清，请返回 ERROR。";
 
-            // 下载图片并转为 Base64
-            const response = await fetch(data.photo_url);
-            const arrayBuffer = await response.arrayBuffer();
-            const base64Data = Buffer.from(arrayBuffer).toString("base64");
+            // 解析 gs:// 路径获取 bucket 名和文件名
+            const gsPath = data.photo_url; // 例如 gs://mock-bucket/mock-photo.jpg
+            const bucketName = gsPath.split("gs://")[1].split("/")[0];
+            const filePath = gsPath.split(`gs://${bucketName}/`)[1];
+
+            const bucket = admin.storage().bucket(bucketName);
+            const [fileBuffer] = await bucket.file(filePath).download();
+            const base64Data = fileBuffer.toString("base64");
+            // ---------------------------------------
 
             // 调用 Gemini 1.5 Flash
             const result = await model.generateContent([
@@ -51,7 +56,7 @@ export const analyzeTemperature = functions
             });
 
         } catch (error) {
-            console.error("AI 识别失败:", error);
+            console.error("AI 识别详细报错:", error);
             return snapshot.ref.update({ status: "error_ai" });
         }
     });
