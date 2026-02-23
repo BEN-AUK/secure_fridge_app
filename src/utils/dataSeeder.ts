@@ -1,6 +1,6 @@
 // src/utils/dataSeeder.ts
 import { db } from '../services/firebaseConfig';
-import { doc, setDoc, serverTimestamp, GeoPoint, Timestamp, FieldValue } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, GeoPoint, FieldValue } from 'firebase/firestore';
 
 // 1. 定义严谨的数据接口 (Interfaces)
 export interface FridgeData {
