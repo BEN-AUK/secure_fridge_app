@@ -98,7 +98,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, fridgeName }) =
       // 5. 执行云端同步
       await uploadToFirebase(imageData);
       
-      alert("✅ 存证已加密同步至云端");
+      alert("✅ 存证已加密同步至云端!");
     } catch (err: any) {
       console.error("存证失败:", err);
       alert("❌ 存证失败: " + err.message);
