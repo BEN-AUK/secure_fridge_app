@@ -115,13 +115,13 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, fridgeName }) =
     // 步骤 1：必须先 await uploadString 成功，再取 downloadURL
     const uploadResult = await uploadString(storageRef, base64Image, 'data_url');
     const downloadURL = await getDownloadURL(uploadResult.ref);
-    const gs_address = `gs://${storageRef.bucket}/${storageRef.fullPath}`;
+    const gsAddress = `gs://${storageRef.bucket}/${storageRef.fullPath}`;
 
     // 步骤 2：再 await addDoc 成功写入 Firestore（含 gs_address）
     await addDoc(collection(db, "logs"), {
       fridge_id: fridgeId,
       photo_url: downloadURL,
-      gs_address,
+      gs_address: gsAddress,
       evidence_metadata: {
         gps_location: gps ? new GeoPoint(gps.lat, gps.lng) : null,
         device_timestamp: new Date().toISOString(),
