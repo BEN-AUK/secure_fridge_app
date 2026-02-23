@@ -9,9 +9,11 @@ export const analyzeTemperature = functions
     .runWith({ secrets: ["GEMINI_API_KEY"] }) // 重点：声明使用这个密钥
     .firestore.document("logs/{docId}")
     .onCreate(async (snapshot, context) => {
+        console.log("=== 函数版本 v2.0 启动 ===");
         const data = snapshot.data();
+        console.log("当前 gs_address:", data?.gs_address);
         // 只有当有图片 URL 时才处理
-        if (!data || !data.photo_url) return null;
+        if (!data || !data.gs_address) return null;
 
         try {
             // 重点：从 process.env 直接读取，Firebase 会自动帮你注入
@@ -25,7 +27,9 @@ export const analyzeTemperature = functions
             const prompt = "你是一个专业的医疗设备审计员。请识别这张冰箱照片中温度计的数字。只返回数字（例如：4.2）。如果看不清，请返回 ERROR。";
 
             // 解析 gs:// 路径获取 bucket 名和文件名
-            const gsPath = data.photo_url; // 例如 gs://mock-bucket/mock-photo.jpg
+            const gsPath = data.gs_address; // 例如 gs://mock-bucket/mock-photo.jpg
+            console.log(gsPath);
+            console.log(data.gs_address);
             const bucketName = gsPath.split("gs://")[1].split("/")[0];
             const filePath = gsPath.split(`gs://${bucketName}/`)[1];
 

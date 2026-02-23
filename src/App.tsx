@@ -23,7 +23,7 @@ const App: React.FC = () => {
       // 1. 拦截开发者模式
       if (params.get('mode') === 'admin') {
         setViewMode('admin');
-        return;
+      return;
       }
 
       // 2. 正常业务：静默匿名登录
