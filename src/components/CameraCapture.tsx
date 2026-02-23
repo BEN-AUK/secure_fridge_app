@@ -95,41 +95,48 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, fridgeName }) =
       // 4. 导出高质量图片
       const imageData = canvas.toDataURL('image/jpeg', 0.85);
       
-      // 5. 执行云端同步
+      // 5. 执行云端同步（上传 + Firestore 写入都成功后才算成功）
       await uploadToFirebase(imageData);
-      
-      alert("✅ 存证已加密同步至云端!");
+
+      alert("✅ 同步成功");
     } catch (err: any) {
       console.error("存证失败:", err);
-      alert("❌ 存证失败: " + err.message);
+      alert("❌ 存证失败: " + (err?.message ?? String(err)));
     } finally {
       setIsUploading(false);
     }
   };
 
-  // 云端上传逻辑
+  // 云端上传逻辑：Storage 上传成功后必须等待 addDoc 写入 Firestore；任一步失败则抛出错误
   const uploadToFirebase = async (base64Image: string) => {
     const timestamp = Date.now();
     const fileName = `evidence/${fridgeId}/${timestamp}.jpg`;
     const storageRef = ref(storage, fileName);
 
-    // A. 上传图片文件
+    // A. 上传图片到 Storage，并获取下载 URL
     const uploadResult = await uploadString(storageRef, base64Image, 'data_url');
-    const downloadURL = await getDownloadURL(uploadResult.ref);
+    const fileRef = uploadResult.ref;
+    const downloadURL = await getDownloadURL(fileRef);
+    const gs_address = `gs://${storageRef.bucket}/${storageRef.fullPath}`;
 
-    // B. 创建 Firestore 结构化日志记录
-    await addDoc(collection(db, "logs"), {
-      fridge_id: fridgeId,
-      photo_url: downloadURL,
-      evidence_metadata: {
-        gps_location: gps ? new GeoPoint(gps.lat, gps.lng) : null,
-        device_timestamp: new Date().toISOString(),
-        user_agent: navigator.userAgent
-      },
-      server_timestamp: serverTimestamp(),
-      status: "pending", // 这里的 pending 标记着下一步 AI 将介入
-      compliance_status: "on_time" 
-    });
+    // B. 必须等待 addDoc 成功写入 Firestore 集合 logs；失败则抛出，由 handleCapture 捕获
+    try {
+      await addDoc(collection(db, "logs"), {
+        fridge_id: fridgeId,
+        photo_url: downloadURL,
+        gs_address,
+        evidence_metadata: {
+          gps_location: gps ? new GeoPoint(gps.lat, gps.lng) : null,
+          device_timestamp: new Date().toISOString(),
+          user_agent: navigator.userAgent
+        },
+        server_timestamp: serverTimestamp(),
+        status: "pending",
+        compliance_status: "on_time"
+      });
+    } catch (docErr: any) {
+      throw new Error(docErr?.message ?? "Firestore 写入失败");
+    }
   };
 
   return (
