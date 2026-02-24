@@ -22,9 +22,9 @@ export function useQrScanner() {
     await qrScannerService.startScanner(elementId, onSuccess);
   };
 
-  const stop = () => {
+  const stop = (): Promise<void> => {
     startedRef.current = false;
-    qrScannerService.stopScanner();
+    return qrScannerService.stopScanner();
   };
 
   return { start, stop };

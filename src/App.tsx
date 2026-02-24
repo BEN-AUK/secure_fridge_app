@@ -47,6 +47,11 @@ const App: React.FC = () => {
     alert(`Scanned: ${id}`);
   };
 
+  const handleBackFromScan = async () => {
+    await qrScanner.stop();
+    setAppStage('HOME');
+  };
+
   useEffect(() => {
     if (appStage !== 'SCANNING') return;
     qrScanner.start(READER_ELEMENT_ID, (id) => handleScanSuccess(id));
@@ -75,6 +80,13 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
+        <button
+          type="button"
+          className="back-button"
+          onClick={handleBackFromScan}
+        >
+          ← BACK TO HOME
+        </button>
         <footer className="status-footer">
           <p>READY TO SCAN</p>
           <p className={isAuthed ? 'device-info' : 'device-info device-info--connecting'}>
