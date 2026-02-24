@@ -3,7 +3,9 @@
   padding: 0;
   width: 100%;
   max-width: none;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -49,9 +51,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100svh;
   margin: 0;
   padding: 20px;
   padding-left: max(20px, env(safe-area-inset-left));
@@ -172,6 +177,7 @@
 
 .status-footer {
   flex-shrink: 0;
+  margin-top: auto;
   text-align: center;
   color: #39FF14;
   text-shadow: 0 0 12px rgba(57, 255, 20, 0.7);
@@ -210,7 +216,9 @@
   width: 100%;
   aspect-ratio: 1;
   max-width: 280px;
-  max-height: 280px;
+  max-height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
