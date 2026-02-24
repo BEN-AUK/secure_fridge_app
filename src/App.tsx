@@ -1,87 +1,127 @@
 // src/App.tsx
-import React, { useEffect, useState } from 'react';
-import { db, auth } from './services/firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import React, { useEffect, useState, useRef } from 'react';
+import './App.css';
+import { auth } from './services/firebaseConfig';
 import { signInAnonymously } from 'firebase/auth';
-import CameraCapture from './components/CameraCapture';
-import AdminSeeder from './components/AdminSeeder'; // 引入刚才写的开发者页面
-import type { FridgeData } from './utils/dataSeeder';
+import { useQrScanner } from './hooks/useQrScanner';
+
+const READER_ELEMENT_ID = 'reader-element';
 
 const App: React.FC = () => {
-  // 核心状态
-  const [viewMode, setViewMode] = useState<'admin' | 'app' | 'loading'>('loading');
-  
-  // 业务状态
-  const [fridge, setFridge] = useState<FridgeData | null>(null);
-  const [fridgeId, setFridgeId] = useState<string>('');
-  const [errorMsg, setErrorMsg] = useState<string>('');
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [appStage, setAppStage] = useState<'HOME' | 'SCANNING'>('HOME');
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const qrScanner = useQrScanner();
 
   useEffect(() => {
-    const initApp = async () => {
-      const params = new URLSearchParams(window.location.search);
-      
-      // 1. 拦截开发者模式
-      if (params.get('mode') === 'admin') {
-        setViewMode('admin');
-      return;
-      }
-
-      // 2. 正常业务：静默匿名登录
-      try {
-        await signInAnonymously(auth);
-        
-        const token = params.get('token');
-        if (!token) {
-          setErrorMsg('⚠️ 请扫描冰箱上的有效二维码进入系统');
-          setViewMode('app');
-          return;
-        }
-
-        // 去数据库校验该冰箱 Token
-        const docRef = doc(db, "fridges", token);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          setFridge(docSnap.data() as FridgeData);
-          setFridgeId(token);
-        } else {
-          setErrorMsg('❌ 无效的二维码：该设备未在系统中注册');
-        }
-      } catch (error) {
-        console.error("初始化错误:", error);
-        setErrorMsg('系统连接错误，请刷新重试');
-      } finally {
-        setViewMode('app');
-      }
+    const trySignIn = () => {
+      signInAnonymously(auth)
+        .then(() => {
+          setIsAuthed(true);
+        })
+        .catch((err) => {
+          console.error('Anonymous sign-in failed:', err);
+          retryTimeoutRef.current = setTimeout(trySignIn, 5000);
+        });
     };
 
-    initApp();
+    trySignIn();
+
+    return () => {
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+    };
   }, []);
 
-  // 渲染分发逻辑
-  if (viewMode === 'loading') {
-    return <div className="flex items-center justify-center min-h-screen">正在连接核心系统...</div>;
+  const handleStart = () => {
+    if (!isAuthed) {
+      alert('SYSTEM OFFLINE: Please check your internet connection.');
+      return;
+    }
+    setAppStage('SCANNING');
+  };
+
+  const handleScanSuccess = (id: string) => {
+    console.log('Scanned:', id);
+    alert(`Scanned: ${id}`);
+  };
+
+  useEffect(() => {
+    if (appStage !== 'SCANNING') return;
+    qrScanner.start(READER_ELEMENT_ID, (id) => handleScanSuccess(id));
+    return () => {
+      qrScanner.stop();
+    };
+  }, [appStage]);
+
+  if (appStage === 'SCANNING') {
+    return (
+      <div className="home-container home-container--scanning">
+        <header className="home-header">
+          <h1 className="home-title">准备扫码...</h1>
+        </header>
+        <div className="qr-reader-wrap">
+          <div id={READER_ELEMENT_ID} />
+        </div>
+        <footer className="status-footer">
+          <p>READY TO SCAN</p>
+          <p className={isAuthed ? 'device-info' : 'device-info device-info--connecting'}>
+            {isAuthed ? 'DEVICE: ONLINE' : 'DEVICE: CONNECTING...'}
+          </p>
+        </footer>
+      </div>
+    );
   }
 
-  // 👉 如果是开发者模式，渲染刚才的黑底注入页面
-  if (viewMode === 'admin') {
-    return <AdminSeeder />;
-  }
-
-  // 👉 正常用户的错误提示
-  if (errorMsg) {
-    return <div className="p-10 text-center font-bold text-red-600 mt-20">{errorMsg}</div>;
-  }
-
-  // 👉 正常用户的打卡界面
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col items-center">
-      <header className="w-full bg-white p-4 shadow-sm text-center">
-        <h1 className="text-xl font-bold text-gray-800">SecureFridge 打卡终端</h1>
-        {fridge && <p className="text-sm text-green-600">设备已锁定: {fridge.name}</p>}
+    <div className="home-container">
+      {/* 顶部标题：分成两行显示，增加视觉张力 */}
+      <header className="home-header">
+        <h1 className="home-title">
+          WELCOME TO<br />
+          <span className="highlight">SECURE FRIDGE</span>
+        </h1>
       </header>
 
-      {fridge && <CameraCapture fridgeId={fridgeId} fridgeName={fridge.name} />}
+      {/* 中间波形图装饰：动态荧光绿条形，中心最高、两侧渐矮，随机节奏 */}
+      <div className="waveform-container">
+        {[...Array(20)].map((_, i) => {
+          const distFromCenter = Math.abs(i - 9.5);
+          const barMax = 10 + 40 * (1 - distFromCenter / 9.5);
+          return (
+            <div
+              key={i}
+              className="waveform-bar"
+              style={
+                {
+                  '--bar-max': `${barMax}px`,
+                  animationDelay: `${(i * 0.06 + (i % 4) * 0.08)}s`,
+                  animationDuration: `${0.35 + (i % 5) * 0.12}s`,
+                } as React.CSSProperties
+              }
+            />
+          );
+        })}
+      </div>
+
+      {/* 核心圆形按钮：未登录时点击提示，已登录进入 SCANNING */}
+      <div className="button-wrapper">
+        <button type="button" className="start-button" onClick={handleStart}>
+          <div className="button-inner">
+            <span className="button-text-main">START</span>
+            <span className="button-text-sub">RECORDING</span>
+          </div>
+        </button>
+      </div>
+
+      {/* 底部静态状态栏：未登录显示 CONNECTING 并红色 */}
+      <footer className="status-footer">
+        <p>READY TO SCAN</p>
+        <p className={isAuthed ? 'device-info' : 'device-info device-info--connecting'}>
+          {isAuthed ? 'DEVICE: ONLINE' : 'DEVICE: CONNECTING...'}
+        </p>
+      </footer>
     </div>
   );
 };
