@@ -4,12 +4,14 @@ import './App.css';
 import { auth } from './services/firebaseConfig';
 import { signInAnonymously } from 'firebase/auth';
 import { useQrScanner } from './hooks/useQrScanner';
+import CameraCapture from './components/CameraCapture';
 
 const READER_ELEMENT_ID = 'reader-element';
 
 const App: React.FC = () => {
   const [isAuthed, setIsAuthed] = useState(false);
-  const [appStage, setAppStage] = useState<'HOME' | 'SCANNING'>('HOME');
+  const [appStage, setAppStage] = useState<'HOME' | 'SCANNING' | 'CAPTURING'>('HOME');
+  const [currentFridgeId, setCurrentFridgeId] = useState<string | null>(null);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const qrScanner = useQrScanner();
 
@@ -42,9 +44,17 @@ const App: React.FC = () => {
     setAppStage('SCANNING');
   };
 
-  const handleScanSuccess = (id: string) => {
-    console.log('Scanned:', id);
-    alert(`Scanned: ${id}`);
+  const handleScanSuccess = (decodedText: string) => {
+    let id = decodedText;
+    try {
+      const data = JSON.parse(decodedText);
+      id = data.id || decodedText; // 如果是 JSON 则取 id 字段
+    } catch (e) {
+      // 如果不是 JSON，直接使用原始文本作为 ID
+    }
+    qrScanner.stop();
+    setCurrentFridgeId(id);
+    setAppStage('CAPTURING');
   };
 
   const handleBackFromScan = async () => {
@@ -54,11 +64,25 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (appStage !== 'SCANNING') return;
-    qrScanner.start(READER_ELEMENT_ID, (id) => handleScanSuccess(id));
+    qrScanner.start(READER_ELEMENT_ID, (decodedText) => handleScanSuccess(decodedText));
     return () => {
       qrScanner.stop();
     };
   }, [appStage]);
+
+  const handleCaptureComplete = () => {
+    setCurrentFridgeId(null);
+    setAppStage('HOME');
+  };
+
+  if (appStage === 'CAPTURING' && currentFridgeId) {
+    return (
+      <CameraCapture
+        fridgeId={currentFridgeId}
+        onComplete={handleCaptureComplete}
+      />
+    );
+  }
 
   if (appStage === 'SCANNING') {
     return (

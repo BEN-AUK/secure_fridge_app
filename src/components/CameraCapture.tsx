@@ -6,10 +6,10 @@ import { collection, addDoc, serverTimestamp, GeoPoint } from 'firebase/firestor
 
 interface CameraCaptureProps {
   fridgeId: string;
-  fridgeName: string;
+  onComplete?: () => void;
 }
 
-const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, fridgeName }) => {
+const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, onComplete }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   
   // 状态管理
@@ -86,7 +86,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, fridgeName }) =
       const timeStr = new Date().toLocaleString();
       const locStr = gps ? `GPS: ${gps.lat.toFixed(6)}, ${gps.lng.toFixed(6)}` : "GPS: 信号未锁定";
       
-      ctx.fillText(`📍 设备: ${fridgeName}`, 40, canvas.height - 75);
+      ctx.fillText(`📍 设备: ${fridgeId}`, 40, canvas.height - 75);
       ctx.fillText(`⏰ ${timeStr}`, 40, canvas.height - 35);
       ctx.font = "20px Monospace";
       ctx.fillText(locStr, 40, canvas.height - 105);
@@ -98,6 +98,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, fridgeName }) =
       // 5. 云端同步：仅当 uploadToFirebase 完全执行完毕且无报错时才提示成功
       await uploadToFirebase(imageData);
       alert("✅ 同步成功");
+      onComplete?.();
     } catch (err: any) {
       console.error("存证失败:", err);
       alert("❌ 存证失败: " + (err?.message ?? String(err)));
@@ -140,7 +141,7 @@ const CameraCapture: React.FC<CameraCaptureProps> = ({ fridgeId, fridgeName }) =
         <div className="camera-capture__hud-line">
           {gps ? `GPS: ${gps.lat.toFixed(4)}, ${gps.lng.toFixed(4)}` : 'GPS: Signal Searching...'}
         </div>
-        <div className="camera-capture__hud-line">DEVICE: {fridgeName}</div>
+        <div className="camera-capture__hud-line">DEVICE: {fridgeId}</div>
         <hr className="camera-capture__hud-sep" aria-hidden="true" />
       </header>
 
