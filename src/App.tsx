@@ -112,31 +112,36 @@ const App: React.FC = () => {
 
   if (appStage === 'CONFIRMING' && currentFridgeId) {
     return (
-      <div className="home-container confirming-container">
-        <div className="confirming-card confirming-fade-in">
-          <p className="confirming-id-text">
-            DEVICE IDENTIFIED: <span className="confirming-fridge-id">{currentFridgeId}</span>
-          </p>
-          <p className="confirming-hint">
-            Proceeding to camera in {countdown}s...
-          </p>
-          <div className="confirming-actions">
-            <button
-              type="button"
-              className="confirming-btn confirming-btn--rescan"
-              onClick={handleRescan}
-            >
+      <div className="confirm-container">
+        <div className="vignette-overlay" aria-hidden="true" />
+
+        <div className="confirm-center-wrap">
+          <div className="confirm-content confirming-fade-in">
+            <div className="id-card">
+              <div className="id-badge">AUTHENTICATION SUCCESS</div>
+              <h2 className="target-id">{currentFridgeId}</h2>
+            </div>
+
+            <div className="scanning-circle-wrap">
+              <div className="scanning-circle" />
+              <div className="scanning-dots" />
+            </div>
+
+            <p className="auto-proceed-text">
+              SYSTEM PROCEEDING IN <span className="timer">{countdown}</span>S
+            </p>
+          </div>
+
+          <div className="confirm-actions">
+            <button type="button" className="rescan-btn" onClick={handleRescan}>
               RESCAN
             </button>
-            <button
-              type="button"
-              className="confirming-btn confirming-btn--continue"
-              onClick={handleContinueNow}
-            >
-              CONTINUE NOW
+            <button type="button" className="continue-btn" onClick={handleContinueNow}>
+              PROCEED NOW
             </button>
           </div>
         </div>
+
         <footer className="status-footer">
           <p>CONFIRM DEVICE</p>
           <p className={isAuthed ? 'device-info' : 'device-info device-info--connecting'}>
