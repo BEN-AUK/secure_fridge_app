@@ -62,7 +62,18 @@ const App: React.FC = () => {
           <h1 className="home-title">准备扫码...</h1>
         </header>
         <div className="qr-reader-wrap">
-          <div id={READER_ELEMENT_ID} />
+          <div className="scanner-container">
+            <div id={READER_ELEMENT_ID} />
+            <div className="scanner-overlay" aria-hidden="true">
+              <div className="scanner-frame">
+                <div className="scanner-line" />
+                <div className="corner top-left" />
+                <div className="corner top-right" />
+                <div className="corner bottom-left" />
+                <div className="corner bottom-right" />
+              </div>
+            </div>
+          </div>
         </div>
         <footer className="status-footer">
           <p>READY TO SCAN</p>
