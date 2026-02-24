@@ -14,7 +14,7 @@ const App: React.FC = () => {
   const [isAuthed, setIsAuthed] = useState(false);
   const [appStage, setAppStage] = useState<AppStage>('HOME');
   const [currentFridgeId, setCurrentFridgeId] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(3);
+  const [countdown, setCountdown] = useState(10);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const qrScanner = useQrScanner();
 
@@ -57,7 +57,7 @@ const App: React.FC = () => {
     }
     qrScanner.stop();
     setCurrentFridgeId(id);
-    setCountdown(3);
+    setCountdown(10);
     setAppStage('CONFIRMING');
   };
 
