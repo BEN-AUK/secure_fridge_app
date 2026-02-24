@@ -215,9 +215,14 @@ const App: React.FC = () => {
         })}
       </div>
 
-      {/* 核心圆形按钮：未登录时点击提示，已登录进入 SCANNING */}
+      {/* 核心圆形按钮：未登录时禁用，已登录进入 SCANNING */}
       <div className="button-wrapper">
-        <button type="button" className="start-button" onClick={handleStart}>
+        <button
+          type="button"
+          className="start-button"
+          disabled={!isAuthed}
+          onClick={handleStart}
+        >
           <div className="button-inner">
             <span className="button-text-main">START</span>
             <span className="button-text-sub">RECORDING</span>

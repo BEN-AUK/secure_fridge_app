@@ -157,6 +157,13 @@
   background: rgba(57, 255, 20, 0.12);
 }
 
+.start-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+  pointer-events: none;
+}
+
 .button-inner {
   display: flex;
   flex-direction: column;
