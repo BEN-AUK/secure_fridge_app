@@ -8,10 +8,13 @@ import CameraCapture from './components/CameraCapture';
 
 const READER_ELEMENT_ID = 'reader-element';
 
+type AppStage = 'HOME' | 'SCANNING' | 'CONFIRMING' | 'CAPTURING';
+
 const App: React.FC = () => {
   const [isAuthed, setIsAuthed] = useState(false);
-  const [appStage, setAppStage] = useState<'HOME' | 'SCANNING' | 'CAPTURING'>('HOME');
+  const [appStage, setAppStage] = useState<AppStage>('HOME');
   const [currentFridgeId, setCurrentFridgeId] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(3);
   const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const qrScanner = useQrScanner();
 
@@ -54,7 +57,8 @@ const App: React.FC = () => {
     }
     qrScanner.stop();
     setCurrentFridgeId(id);
-    setAppStage('CAPTURING');
+    setCountdown(3);
+    setAppStage('CONFIRMING');
   };
 
   const handleBackFromScan = async () => {
@@ -70,9 +74,31 @@ const App: React.FC = () => {
     };
   }, [appStage]);
 
+  useEffect(() => {
+    if (appStage !== 'CONFIRMING') return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          setAppStage('CAPTURING');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [appStage]);
+
   const handleCaptureComplete = () => {
     setCurrentFridgeId(null);
     setAppStage('HOME');
+  };
+
+  const handleRescan = () => {
+    setAppStage('SCANNING');
+  };
+
+  const handleContinueNow = () => {
+    setAppStage('CAPTURING');
   };
 
   if (appStage === 'CAPTURING' && currentFridgeId) {
@@ -81,6 +107,43 @@ const App: React.FC = () => {
         fridgeId={currentFridgeId}
         onComplete={handleCaptureComplete}
       />
+    );
+  }
+
+  if (appStage === 'CONFIRMING' && currentFridgeId) {
+    return (
+      <div className="home-container confirming-container">
+        <div className="confirming-card confirming-fade-in">
+          <p className="confirming-id-text">
+            DEVICE IDENTIFIED: <span className="confirming-fridge-id">{currentFridgeId}</span>
+          </p>
+          <p className="confirming-hint">
+            Proceeding to camera in {countdown}s...
+          </p>
+          <div className="confirming-actions">
+            <button
+              type="button"
+              className="confirming-btn confirming-btn--rescan"
+              onClick={handleRescan}
+            >
+              RESCAN
+            </button>
+            <button
+              type="button"
+              className="confirming-btn confirming-btn--continue"
+              onClick={handleContinueNow}
+            >
+              CONTINUE NOW
+            </button>
+          </div>
+        </div>
+        <footer className="status-footer">
+          <p>CONFIRM DEVICE</p>
+          <p className={isAuthed ? 'device-info' : 'device-info device-info--connecting'}>
+            {isAuthed ? 'DEVICE: ONLINE' : 'DEVICE: CONNECTING...'}
+          </p>
+        </footer>
+      </div>
     );
   }
 

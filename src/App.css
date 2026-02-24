@@ -349,3 +349,98 @@
   background: rgba(57, 255, 20, 0.2);
   transform: translateX(-50%) scale(0.95);
 }
+
+/* ----- CONFIRMING 阶段：设备确认转场 ----- */
+@keyframes confirming-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirming-container {
+  justify-content: center;
+}
+
+.confirming-card {
+  border: 3px solid #39FF14;
+  box-shadow: 0 0 24px rgba(57, 255, 20, 0.4);
+  border-radius: 12px;
+  padding: 28px 24px;
+  max-width: min(340px, 92vw);
+  width: 100%;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.confirming-fade-in {
+  animation: confirming-fade-in 0.35s ease-out forwards;
+}
+
+.confirming-id-text {
+  color: #39FF14;
+  text-shadow: 0 0 12px rgba(57, 255, 20, 0.7);
+  font-size: clamp(0.95rem, 3vw, 1.1rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.confirming-fridge-id {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.05em;
+  word-break: break-all;
+}
+
+.confirming-hint {
+  color: rgba(57, 255, 20, 0.85);
+  font-size: 0.8rem;
+  margin: 0 0 24px 0;
+  letter-spacing: 0.03em;
+}
+
+.confirming-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.confirming-btn {
+  padding: 10px 18px;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.confirming-btn--rescan {
+  background: transparent;
+  border: 1px solid rgba(57, 255, 20, 0.5);
+  color: #39FF14;
+}
+
+.confirming-btn--rescan:hover {
+  border-color: rgba(57, 255, 20, 0.8);
+  background: rgba(57, 255, 20, 0.06);
+}
+
+.confirming-btn--continue {
+  background: rgba(57, 255, 20, 0.12);
+  border: 2px solid #39FF14;
+  color: #fff;
+  box-shadow: 0 0 16px rgba(57, 255, 20, 0.5);
+}
+
+.confirming-btn--continue:hover {
+  box-shadow: 0 0 24px #39FF14;
+  background: rgba(57, 255, 20, 0.18);
+}
